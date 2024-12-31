@@ -1,0 +1,39 @@
+# Node.js dependencies
+node_modules/
+
+# npm logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files (if you're using .env to store sensitive information like database credentials)
+.env
+
+# OS-specific files
+.DS_Store        # macOS system file
+Thumbs.db        # Windows system file
+
+# Logs
+logs
+*.log
+*.log.*
+
+# Build output
+build/
+dist/
+
+# IDE and editor specific files
+.vscode/          # VS Code settings
+.idea/            # JetBrains IDEs like WebStorm, IntelliJ
+*.swp             # vim swap files
+
+# Dependency directories for React
+client/node_modules/
+client/build/
+
+# Optional: If you use Docker for local development
+.docker/
+
+# Optional: if using cloud or server configurations
+*.pem             # private keys for SSH or cloud access
+*.crt             # certificates
