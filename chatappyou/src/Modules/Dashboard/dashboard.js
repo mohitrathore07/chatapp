@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Avatar3 from '../../images/vecteezy_modern-male-avatar-with-black-hair-and-hoodie-illustration_48216761.png';
 import Input from '../../Componants/Input/input';
+
+// new add 
+import {io} from 'socket.io-client';
 
 const Dashboard = () => {
     
@@ -9,34 +12,34 @@ const Dashboard = () => {
     const [messages , setMessages] = useState({});
     const [message , setMessage] = useState('');
     const [users , setUsers] = useState([]);
+    const messageRef = useRef(null);
+    // new io start
 
-    const contacts = [ 
-        {
-            Name: 'Naveen Dhakad',
-            status: 'Availible',
-            img: Avatar3
-        },
-        {
-            Name: 'Prakash Patidar',
-            status: 'Availible',
-            img: Avatar3
-        },
-        {
-            Name: 'Mukul Patidar',
-            status: 'Availible',
-            img: Avatar3
-        },
-        {
-            Name: 'Nikhil Patidar',
-            status: 'Availible',
-            img: Avatar3
-        },
-        {
-            Name: 'Om Dhakad',
-            status: 'Availible',
-            img: Avatar3
-        },
-    ]
+    const [socket, setSocket ] = useState(null);
+
+    useEffect(() => {
+            setSocket(io('http://localhost:3001'));
+    }, []);
+
+    useEffect(() => {
+        socket?.emit('addUser', user?.id);
+        socket?.on('getUsers', users => {
+            console.log('activeiusers :>>', users);
+        });
+        
+        socket?.on('getMessage', data => {
+          
+            setMessages(prev => ({
+                ...prev,
+                messages: [...prev.messages, {user: data.user, message: data.message}] 
+            })
+        )})
+    }, [socket]);
+
+    useEffect(() => {
+        messageRef?.current?.scrollIntoView({behavior: 'smooth'})
+    },[messages.messages]);
+    // new io end
 
     useEffect(() => {
         const fetchusers = async () => {
@@ -82,6 +85,12 @@ const Dashboard = () => {
     }
 
     const sendMessage = async () => {
+        socket.emit('sentMessage', {
+            senderId: user?.id,
+            receiverId : messages?.receiver?.receiverId,
+            message,
+            conversationId: message?.receiver?.receiverId
+        })
         const res = await fetch('http://localhost:3001/message/save', {
             method: 'POST',
             headers: {
@@ -98,7 +107,7 @@ const Dashboard = () => {
     }
   return (
     <div className='w-screen flex'>
-        <div className='w-[25%] h-screen border-black  bg-[#f1f3ff] px-14 py-10'>
+        <div className='w-[25%] h-screen border-black  bg-[#f1f3ff] px-14 py-10 overflow-scroll'>
             <div className='flex items-center mb-4 cursor-pointer' >
                 <div className='bg-white p-2 border-2  border-primary rounded-full'><img src={Avatar3} width={55} height={55}></img> </div>
                 <div className='ml-4'> 
@@ -108,7 +117,7 @@ const Dashboard = () => {
             </div>
             <hr className='font-extrabold'/>
 
-            <div className='mt-8'>
+            <div className='mt-8'> 
                 <div className='font-bold text-primary'>Messages</div>
                 <div className='mt-4'>
                     {
@@ -165,9 +174,12 @@ const Dashboard = () => {
                         messages.messages.map(({message , user : {id} = {}}) => {
                             if(id === user?.id) {
                                 return (
-                                <div className='bg-primary max-w-[40%] mb-4 text-white ml-auto p-2 rounded-lg text-sm font-serif'>
-                                   {message}
-                                </div> 
+                                <>
+                                    <div className='bg-primary max-w-[40%] mb-4 text-white ml-auto p-2 rounded-lg text-sm font-serif'>
+                                    {message}
+                                    </div> 
+                                    <div ref={messageRef}></div>
+                                </>
                                 )
                             }
                             else {
@@ -196,7 +208,7 @@ const Dashboard = () => {
             }
         </div>
        
-        <div className='w-[25%]'>
+        <div className='w-[25%] h-screen bg-light px-8 py-14 overflow-scroll'>
             <div className='text-primary font-bold mx-14 my-14'>Peoples</div>
             <div className='mt-4'>
                     {
